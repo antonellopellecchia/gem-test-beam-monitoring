@@ -1,0 +1,6 @@
+---
+modules:
+  lv_power_supplies:
+  - pool05550013.cern.ch
+  - pool05550019.cern.ch
+xdaq_url: pcuclacvp13:20500

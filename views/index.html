@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Monitoring</title>
+  <script src="https://code.jquery.com/jquery-3.5.0.js"></script>
+</head>
+<body>
+ 
+<div id="lv_values"></div>
+ 
+<script>
+(function() {
+  console.log('hi')
+  var lv_monitor_api = "http://localhost:8080/lv/";
+  $.getJSON(lv_monitor_api)
+    .done(function( data ) {
+      console.log(data.data);
+      $.each( data.data.items, function( i, item ) {
+        console.log(i);
+        console.log(item);
+        $( "<div>"+item.name+"</div>" ).appendTo( "#lv_values" );
+      });
+    });
+})();
+</script>
+ 
+</body>
+</html>

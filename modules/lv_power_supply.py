@@ -3,18 +3,21 @@ from plx_gpib_ethernet import PrologixGPIBEthernet
 class GPIBPowerSupply:
     PORT = 1234
 
-    def __init__(self, ip):
-        self.ip = ip
-        self.device = PrologixGPIBEthernet(tracking)
+    def __init__(self, name, host):
+        self.name = name
+        self.host = host
+        self.device = PrologixGPIBEthernet(self.host)
     
     def connect(self):
-        self.gpib.connect()
-        self.gpib.select(6)
+        self.device.connect()
+        self.device.select(6)
 
-    def get_voltage(self):
+    @property
+    def voltage(self):
         voltage = self.device.query("VO?")
         return voltage.strip()
 
-    def get_current(self):
+    @property
+    def current(self):
         current = self.device.query("IO?")
         return current.strip()

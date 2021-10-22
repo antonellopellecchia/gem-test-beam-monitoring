@@ -1,6 +1,13 @@
 ---
 modules:
-  lv_power_supplies:
-  - pool05550013.cern.ch
-  - pool05550019.cern.ch
+  lv_power_supplies: [
+    {
+      name: tracker,
+      host: pool05550019.cern.ch
+    },
+    {
+      name: chambers,
+      host: pool05550013.cern.ch
+    }
+  ]
 xdaq_url: pcuclacvp13:20500

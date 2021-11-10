@@ -1,83 +1,178 @@
-#!/bin/python3
+import datetime
 
-import time
-import yaml
-import json
-import argparse
+import pandas as pd
 
-from modules.lv_power_supply import GPIBPowerSupply
+import dash
+import dash_core_components as dcc
+import dash_html_components as html
+import plotly
+from dash.dependencies import Input, Output
 
-import base64
-from io import BytesIO
-from bottle import route, run, template, view
-from matplotlib.figure import Figure
+external_stylesheets = ["https://codepen.io/chriddyp/pen/bWLwgP.css"]
 
-lv_supplies = list()
+app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+app.layout = html.Div(
+    html.Div([
+        html.H4("CMS GEM test beam monitor"),
+        html.Div(id="live-update-text"),
+        dcc.Graph(id="rate-graph"),
+        html.Div("VFAT error monitoring"),
+        dcc.Graph(id="vfat-error-graph"),
+        html.Div("Low voltage monitoring"),
+        dcc.Graph(id="low-voltage-graph"),
+        dcc.Interval(
+            id="interval-component",
+            interval=5*1000, # in milliseconds
+            n_intervals=0
+        )
+    ])
+)
 
-lv_data = dict()
 
-@route('/')
-@view('index')
-def index():
-    return dict()
+"""@app.callback(Output("live-update-text", "children"),
+              Input("interval-component", "n_intervals"))
+def update_metrics(n):
+    lon, lat, alt = satellite.get_lonlatalt(datetime.datetime.now())
+    style = {"padding": "5px", "fontSize": "16px"}
+    return [
+        html.Span("Longitude: {0:.2f}".format(lon), style=style),
+        html.Span("Latitude: {0:.2f}".format(lat), style=style),
+        html.Span("Altitude: {0:0.2f}".format(alt), style=style)
+    ]"""
 
-@route('/lv/')
-def lv_monitoring():
-    lv_values = list()
-    for lv_supply in lv_supplies:
-        lv_values.append({
-            'name': lv_supply.name,
-            'voltage': lv_supply.voltage,
-            'current': lv_supply.current
-        })
-    return {'data': lv_values}
 
-@route("/lv/plot/<name>/<variable>")
-def lv_plot(name, variable):
-    current_time = time.time()
+# Multiple components can update everytime interval gets fired.
+@app.callback(Output("low-voltage-graph", "figure"), Input("interval-component", "n_intervals"))
+def update_lv_graph(n):
 
-    # retrieve monitoring data:
-    data = lv_monitoring()['data']
-    for lv_supply in data:
-        supply_name = lv_supply['name']
-        if supply_name != name: continue
-        if not name in lv_data:
-            lv_data[name] = dict()
-            lv_data[name]['time'] = list()
-            lv_data[name]['voltage'] = list()
-            lv_data[name]['current'] = list()
-        lv_data[name]['time'].append(current_time)
-        lv_data[name]['voltage'].append(lv_supply['voltage'])
-        lv_data[name]['current'].append(lv_supply['current'])
-        break
-    
-    # plot data for lv supply
-    fig = Figure()
-    ax = fig.subplots()
-    ax.plot(lv_data[name]['time'], lv_data[name]['voltage'])
-    buf = BytesIO()
-    fig.savefig(buf, format="png")
-    data = base64.b64encode(buf.getbuffer()).decode("ascii")
-    return f"<img src='data:image/png;base64,{data}'/>"
+    # Collect some data
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('config', help='configuration file path')
-    args = parser.parse_args()
+    # Create the graph with subplots
+    fig = plotly.tools.make_subplots(rows=2, cols=2, vertical_spacing=0.1)
+    fig["layout"]["title"] = {
+        "x": .1, "y": .9,
+    }
+    fig["layout"]["margin"] = {
+        "l": 20, "r": 10, "b": 30, "t": 10
+    }
+    fig["layout"]["legend"] = {"x": 0, "y": 1, "xanchor": "left"}
 
-    with open(args.config, 'r') as config_stream:
-        config = yaml.safe_load(config_stream)
+    log_df = pd.read_csv("log/testbeam.log", sep=";")
+    for row,device in enumerate(["tracker", "chambers"]):
+        log_device = log_df[log_df["name"]==device].tail(200)
 
-    for lv_supply in config['modules']['lv_power_supplies']:
-        lv_supplies.append(GPIBPowerSupply(lv_supply['name'], lv_supply['host']))
-        lv_supplies[-1].connect()
+        data_time = list(log_device["time"]-log_df.iloc[0]["time"])
+        fig.append_trace({
+            "x": data_time,
+            "y": list(log_device["voltage"]),
+            "name": f"{device} voltage",
+            "mode": "lines+markers",
+            "type": "scatter"
+        }, row+1, 1)
+        fig.append_trace({
+            "x": data_time,
+            "y": list(log_device["current"]),
+            "name": f"{device} current",
+            "mode": "lines+markers",
+            "type": "scatter"
+        }, row+1, 2)
 
-    run(host='0.0.0.0', port=8080, debug=True, reloader=True)
-    
-    #while True:
-        #for lv_supply in lv_supplies:
-            #print(lv_supply.name, lv_supply.voltage, lv_supply.current)
-        #time.sleep(1)
-        #print('.....')
+    return fig
 
-if __name__=='__main__': main()
+# Multiple components can update everytime interval gets fired.
+@app.callback(Output("rate-graph", "figure"), Input("interval-component", "n_intervals"))
+def update_rate_graph(n):
+
+    # Collect some data
+    log_df = pd.read_csv("log/xdaq.log", sep=";")
+    log_device = log_df.tail(200)
+    l1a_rate = int(log_df.iloc[-1]["L1A_RATE"])
+
+    # Create the graph with subplots
+    fig = plotly.tools.make_subplots(rows=1, cols=2, vertical_spacing=0.1)
+
+    # L1A count
+    fig["layout"]["title"] = {
+        "x": .03, "y": .95,
+        "text": f"L1A rate: {l1a_rate} Hz"
+    }
+    fig["layout"]["margin"] = {
+        "l": 30, "r": 10, "b": 30, "t": 10
+    }
+    fig["layout"]["legend"] = {"x": .01, "y": .9, "xanchor": "left"}
+
+    xdaq_time = list(log_device["time"]-log_device.iloc[0]["time"])
+    fig.append_trace({
+        "x": xdaq_time,
+        "y": list(log_device["L1A_ID"]),
+        "name": "L1A count",
+        "mode": "lines+markers",
+        "type": "scatter"
+    }, 1, 1)
+
+    # L1A rate
+    l1a_rate_df = log_df[log_df["L1A_RATE"]!=0].tail(200)
+    fig.append_trace({
+        "x": list(l1a_rate_df["time"])-l1a_rate_df.iloc[0]["time"],
+        "y": list(l1a_rate_df["L1A_RATE"]),
+        "name": "L1A rate",
+        "mode": "lines+markers",
+        "type": "scatter"
+    }, 1, 2)
+
+    return fig
+
+# Multiple components can update everytime interval gets fired.
+@app.callback(Output("vfat-error-graph", "figure"), Input("interval-component", "n_intervals"))
+def update_vfat_err(n):
+
+    # Collect some data
+    log_df = pd.read_csv("log/xdaq.log", sep=";")
+    log_device = log_df.tail(50)
+
+    # Create the graph with subplots
+    fig = plotly.tools.make_subplots(rows=1, cols=2, vertical_spacing=0.1)
+
+    # L1A count
+    fig["layout"]["title"] = {
+        "x": .03, "y": .95,
+        #"text": "VFAT error counters"
+    }
+    fig["layout"]["margin"] = {
+        "l": 30, "r": 10, "b": 30, "t": 10
+    }
+    fig["layout"]["legend"] = {"x": .01, "y": .9, "xanchor": "left"}
+
+    xdaq_time = list(log_device["time"]-log_device.iloc[0]["time"])
+
+    vfat_sync_err = list(
+        sum([
+            sum([log_device[f"OH{ohn}.VFAT{vfatn}.SYNC_ERR_CNT"] for vfatn in range(12)])
+            for ohn in [0, 2, 3]
+        ])
+    )
+    fig.append_trace({
+        "x": xdaq_time,
+        "y": vfat_sync_err,
+        "name": "Sync errors",
+        "mode": "lines+markers",
+        "type": "scatter"
+    }, 1, 1)
+    vfat_crc_err = list(
+        sum([
+            sum([log_device[f"OH{ohn}.VFAT{vfatn}.DAQ_CRC_ERROR_CNT"] for vfatn in range(12)])
+            for ohn in [0, 2, 3]
+        ])
+    )
+    fig.append_trace({
+        "x": xdaq_time,
+        "y": vfat_crc_err,
+        "name": "CRC errors",
+        "mode": "lines+markers",
+        "type": "scatter"
+    }, 1, 2)
+
+    return fig
+
+if __name__ == "__main__":
+    app.run_server(host="0.0.0.0", debug=True)

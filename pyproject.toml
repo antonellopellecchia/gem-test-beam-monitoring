@@ -10,7 +10,9 @@ matplotlib = "^3.4.3"
 PyVISA = "^1.11.3"
 seaborn = "^0.11.2"
 PyYAML = "^6.0"
-bottle = "^0.12.19"
+Flask = "^2.0.2"
+dash = "^2.0.0"
+requests = "^2.26.0"
 
 [tool.poetry.dev-dependencies]
 

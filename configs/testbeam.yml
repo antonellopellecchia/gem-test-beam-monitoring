@@ -1,0 +1,19 @@
+---
+modules:
+  lv_power_supplies: [
+    {
+      name: tracker,
+      host: pool05550019.cern.ch,
+      variables: [voltage, current]
+    },
+    {
+      name: chambers,
+      host: pool05550013.cern.ch,
+      variables: [voltage, current]
+    }
+  ]
+log_file: log/testbeam.log
+xdaq_file: log/xdaq.log
+xdaq_url: pcuclacvp13:20500
+xdaq_monitor_page: urn:xdaq-application:lid=6147800/jsonUpdate
+sleep_time: 5

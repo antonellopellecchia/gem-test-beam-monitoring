@@ -1,3 +1,5 @@
+import time
+
 from plx_gpib_ethernet import PrologixGPIBEthernet
 
 class GPIBPowerSupply:
@@ -15,9 +17,11 @@ class GPIBPowerSupply:
     @property
     def voltage(self):
         voltage = self.device.query("VO?")
+        time.sleep(1e-3)
         return voltage.strip()
 
     @property
     def current(self):
         current = self.device.query("IO?")
+        time.sleep(1e-3)
         return current.strip()

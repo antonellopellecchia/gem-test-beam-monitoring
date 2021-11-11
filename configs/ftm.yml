@@ -1,0 +1,15 @@
+---
+modules:
+  hv: [
+    {
+      name: ftm,
+      port: /dev/ttyACM0,
+      board: 0
+    },
+    {
+      name: pmt,
+      port: /dev/ttyUSB1,
+      board: 1
+    },
+  ]
+sleep_time: 5

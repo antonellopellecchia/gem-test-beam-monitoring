@@ -12,4 +12,19 @@ modules:
       board: 1
     },
   ]
-sleep_time: 5
+  scope:
+    name: readout
+    hostname: 128.141.41.226
+    class: rto
+    channels: [mcp, pmt1, pmt2, ftm]
+monitoring:
+  file: out/signals.txt
+  data_x: time
+  data_y: [
+    "MCP-PMT": ch0,
+    "MaPMT 1": ch1,
+    "MaPMT 2": ch2,
+    "FTM": ch3,
+  ]
+  sleep_time: 5
+output_dir: out

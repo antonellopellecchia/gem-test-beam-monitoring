@@ -13,6 +13,7 @@ import curses
 import numpy as np
 
 from modules import hv
+from modules import scope
 import labsetup
 
 lv_supplies = list()
@@ -25,13 +26,16 @@ def main(screen):
     with open(args.config, 'r') as config_stream:
         config = yaml.safe_load(config_stream)
     
-    ftm_setup = labsetup.LabSetup()
+    outdir = config["output_dir"]
+    os.makedirs(outdir, exist_ok=True)
 
+    ftm_setup = labsetup.LabSetup()
     for hv_dict in config["modules"]["hv"]:
         name, port, board = hv_dict["name"], hv_dict["port"], hv_dict["board"]
         ftm_setup.hv.add(hv.BoardCaen(name, port, board))
+    ftm_setup.scope = scope.Scope.from_config(config["modules"]["scope"])
 
-    #screen = curses.initscr()
+    screen = curses.initscr()
 
     try:
         while True:
@@ -39,6 +43,8 @@ def main(screen):
             screen.addstr(ftm_setup.status_table().__str__())
             screen.refresh()
             time.sleep(1)
+
+            ftm_setup.scope.save_event_raw(f"{outdir}/raw.txt")
     except KeyboardInterrupt: pass
     
     return

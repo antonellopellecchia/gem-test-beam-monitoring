@@ -9,6 +9,7 @@ import socket
 import requests
 
 import curses
+import prompt_toolkit
 
 import numpy as np
 
@@ -35,18 +36,21 @@ def main(screen):
         ftm_setup.hv.add(hv.BoardCaen(name, port, board))
     ftm_setup.scope = scope.Scope.from_config(config["modules"]["scope"])
 
-    screen = curses.initscr()
+    try:
+        while True:
+            # screen.clear()
+            # screen.addstr(ftm_setup.status_table().__str__())
+            # screen.refresh()
+            time.sleep(1)
+            ftm_setup.scope.save_event_raw(f"{outdir}/raw.txt")
+    except KeyboardInterrupt: pass
 
     try:
         while True:
-            screen.clear()
-            screen.addstr(ftm_setup.status_table().__str__())
-            screen.refresh()
-            time.sleep(1)
-
-            ftm_setup.scope.save_event_raw(f"{outdir}/raw.txt")
+            text = prompt_toolkit.prompt('Give me some input: ')
+            print('You said: %s' % text)
     except KeyboardInterrupt: pass
-    
+
     return
 
     for lv_supply in config['modules']['lv_power_supplies']:

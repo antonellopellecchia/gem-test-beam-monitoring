@@ -20,11 +20,11 @@ modules:
 monitoring:
   file: out/signals.txt
   data_x: time
-  data_y: [
+  data_y: {
     "MCP-PMT": ch0,
     "MaPMT 1": ch1,
     "MaPMT 2": ch2,
     "FTM": ch3,
-  ]
+  }
   sleep_time: 5
 output_dir: out

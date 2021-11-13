@@ -10,16 +10,16 @@ class HVBoards:
     def add(self, board):
         self.boards.append(board)
     
-    def repr_status(self):
-        parameters = ["board", "channel", "vset", "vmon", "iset", "imon"]
-        status_str = ("{:<15} "*len(parameters)).format(*parameters)+"\n"
-        for board in self.boards:
-            for channel_status in board.get_status():
-                status_str += ("{:<15} "*len(parameters)).format(*channel_status.values())+"\n"
-        return status_str
+    # def repr_status(self):
+    #     parameters = ["board", "channel", "vset", "vmon", "iset", "imon", "status"]
+    #     status_str = ("{:<15} "*len(parameters)).format(*parameters)+"\n"
+    #     for board in self.boards:
+    #         for channel_status in board.get_status():
+    #             status_str += ("{:<15} "*len(parameters)).format(*channel_status.values())+"\n"
+    #     return status_str
 
     def status_table(self):
-        parameters = ["board", "channel", "vset", "vmon", "iset", "imon"]
+        parameters = ["board", "channel", "vset", "vmon", "iset", "imon", "status"]
         table = BeautifulTable()
         table.columns.header = parameters
         for board in self.boards:
@@ -31,7 +31,7 @@ class HVBoard: pass
 
 class BoardCaen(HVBoard):
     
-    parameters = ["VSET","VMON","ISET","IMON"]
+    parameters = ["VSET","VMON","ISET","IMON","STAT"]
 
     def __init__(self, name, port, board):
         self.name = name
@@ -84,6 +84,10 @@ class BoardCaen(HVBoard):
     
     def set_parameter(self, channel, name, value):
         command = f'$BD:{self.board},CMD:SET,CH:{channel},PAR:{name},VAL:{value}\r\n'
+        return self.send_command(command)
+
+    def get_parameter(self, channel, name):
+        command = f'$BD:{self.board},CMD:MON,CH:{channel},PAR:{name}\r\n'
         return self.send_command(command)
     
     def turn_on(self, channel):

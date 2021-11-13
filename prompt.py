@@ -27,6 +27,9 @@ def daq_execute(command):
         elif command_list[1] == "set":
             board, channel, param, value = command_list[2:6]
             print(ftm_setup.hv.boards[int(board)].set_parameter(channel, param, value), end="")
+        elif command_list[1] == "get":
+            board, channel, param = command_list[2:5]
+            print(ftm_setup.hv.boards[int(board)].get_parameter(channel, param), end="")
         elif command_list[1] == "on":
             board, channel = command_list[2:4]
             print(ftm_setup.hv.boards[int(board)].turn_on(channel), end="")
@@ -58,10 +61,12 @@ def main():
     previous_command = ""
     try:
         while True:
-            command = prompt_session.prompt('[daq]$ ')
-            if command == "": command = previous_command
-            previous_command = command
-            daq_execute(command)
-    except KeyboardInterrupt: pass
+            try:
+                command = prompt_session.prompt('[daq]$ ')
+                if command == "": command = previous_command
+                previous_command = command
+                daq_execute(command)
+            except KeyboardInterrupt: pass
+    except EOFError: pass
 
 if __name__=='__main__': main()

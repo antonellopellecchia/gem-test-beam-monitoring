@@ -61,6 +61,8 @@ def update_graphs(n):
             "mode": "lines+markers",
             "type": "scatter"
         }, 1, 1)
+        fig.update_xaxes(title_text=x_column, row=1, col=1)
+        fig.update_yaxes(title_text=name, row=1, col=1)
         figs.append(fig)
 
     return figs

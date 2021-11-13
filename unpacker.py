@@ -37,7 +37,7 @@ def main():
                     args.input = f"{run_directory}/{event_files[-1]}"
                     args.output = config["monitoring"]["file"]
                 except (IndexError,FileNotFoundError):
-                    print("Run has disappeared, waiting...")
+                    print("\nRun has disappeared, waiting...")
                     time.sleep(1)
                     continue
 

@@ -30,11 +30,16 @@ def main():
             if args.online:
                 # ignore input argument and use last file
                 current_run_file = f"{outdir}/current_run.txt"
-                with open(current_run_file, "r") as current_run_stream:            
-                    run_directory = current_run_stream.read()
-                event_files = sorted(os.listdir(run_directory))
-                args.input = f"{run_directory}/{event_files[-1]}"
-                args.output = config["monitoring"]["file"]
+                try:
+                    with open(current_run_file, "r") as current_run_stream:          
+                        run_directory = current_run_stream.read()
+                    event_files = sorted(os.listdir(run_directory))
+                    args.input = f"{run_directory}/{event_files[-1]}"
+                    args.output = config["monitoring"]["file"]
+                except (IndexError,FileNotFoundError):
+                    print("Run has disappeared, waiting...")
+                    time.sleep(1)
+                    continue
 
             print(f"Reading {args.input} and writing to {args.output}\t\t", end="\r")
 

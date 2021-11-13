@@ -81,6 +81,16 @@ class BoardCaen(HVBoard):
         response = self.send_command(command)
         response_data = self.parse_line(response)
         return response_data['VAL']
+    
+    def set_parameter(self, channel, name, value):
+        command = f'$BD:{self.board},CMD:SET,CH:{channel},PAR:{name},VAL:{value}\r\n'
+        return self.send_command(command)
+    
+    def turn_on(self, channel):
+        return self.send_command(f"$BD:{self.board},CMD:SET,CH:{channel},PAR:ON\r\n")
+
+    def turn_off(self, channel):
+        return self.send_command(f"$BD:{self.board},CMD:SET,CH:{channel},PAR:OFF\r\n")
 
     def set_voltage(self, channel, voltage):
         command = f'$BD:{self.board},CMD:SET,CH:{channel},PAR:VSET,VAL:{voltage}\r\n'

@@ -25,10 +25,6 @@ class ScopeRTO(Scope):
         self.hostname = hostname
         self.scope = vxi11.Instrument(hostname)
 
-        print('Initializing communication to scope...')
-        self.scope.write('TRIG:MODE?')
-        print('Trigger', self.scope.read())
-
     def get_event_raw(self):
         # get raw event from all channels
         event_raw = f"CHANNELS:{self.channels}/"

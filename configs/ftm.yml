@@ -14,11 +14,12 @@ modules:
   ]
   scope:
     name: readout
-    hostname: 128.141.41.226
+    #hostname: 128.141.41.206
+    hostname: cmsgemrto1.dyndns.cern.ch
     class: rto
     channels: [mcp, pmt1, pmt2, ftm]
 monitoring:
-  file: /data/runs/signals.txt
+  file: /data/runs/raw/signals.txt
   data_x: time
   # data_y: {
   #   "MCP-PMT": ch0,
@@ -50,4 +51,4 @@ monitoring:
   ]
   twocolumns: True,
   sleep_time: 1
-output_dir: /data/runs
+output_dir: /data/runs/raw

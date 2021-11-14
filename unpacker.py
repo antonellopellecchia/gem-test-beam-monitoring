@@ -31,7 +31,7 @@ def main():
                 # ignore input argument and use last file
                 current_run_file = f"{outdir}/current_run.txt"
                 try:
-                    with open(current_run_file, "r") as current_run_stream:          
+                    with open(current_run_file, "r") as current_run_stream:
                         run_directory = current_run_stream.read()
                     event_files = sorted(os.listdir(run_directory))
                     args.input = f"{run_directory}/{event_files[-1]}"
@@ -41,10 +41,13 @@ def main():
                     time.sleep(1)
                     continue
 
-            print(f"Reading {args.input} and writing to {args.output}\t\t", end="\r")
+            #print(f"Reading {args.input} and writing to {args.output}\t\t", end="\r")
 
             with open(args.input, "r") as input_stream:
-                event_list = input_stream.read().split("/")
+                #event_binary = input_stream.read()
+                #print(event_binary)
+                event_string = input_stream.read()
+                event_list = event_string.split("/")
                 event_list.remove("")
                 if len(event_list) == 0: continue
                 event = scope.Event.from_raw(event_list, format="rto")

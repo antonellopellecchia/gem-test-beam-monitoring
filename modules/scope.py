@@ -14,8 +14,9 @@ class Scope:
             return ScopeRTO(config["hostname"])
 
     def save_event_raw(self, output_path, mode="w"):
+        event_raw = self.get_event_raw()
         with open(output_path, mode) as output_file:
-            output_file.write(self.get_event_raw())
+            output_file.write(event_raw)
 
 class ScopeRTO(Scope):
 
@@ -27,20 +28,29 @@ class ScopeRTO(Scope):
 
     def get_event_raw(self):
         # get raw event from all channels
-        event_raw = f"CHANNELS:{self.channels}/"
+        event_raw = f"CHANNELS:{self.channels}/"#.encode()
         for channel in range(1, self.channels+1):
-            channel_header = f"CH{channel:02}"
+            channel_header = f"CH{channel:02}"#.encode()
             waveform_raw = self.get_waveform_raw(channel)
-            event_raw += f"{channel_header}_{waveform_raw}/"
+            event_raw += channel_header+"_"+waveform_raw+"/"
         return event_raw
 
-    def get_waveform_raw(self, channel):
+    def get_waveform_raw(self, channel, wf_format="ascii"):
         # gets last triggered waveform from chosen channel
-        self.scope.write(f'CHAN{channel}:DATA:HEAD?')
-        waveform_header = self.scope.read()
-        self.scope.write(f'CHAN{channel}:DATA?')
-        waveform_content = self.scope.read()
-        return f"{waveform_header}_{waveform_content}"
+        if wf_format=="ascii": # sloooow
+            self.scope.write(f'CHAN{channel}:DATA:HEAD?')
+            waveform_header = self.scope.read()
+            self.scope.write(f'CHAN{channel}:DATA?')
+            waveform_content = self.scope.read()
+            return f"{waveform_header}_{waveform_content}"
+        elif wf_format=="raw":
+            self.scope.write(f'CHAN{channel}:DATA:HEAD?')
+            waveform_header = self.scope.read()
+            self.scope.write(f'CHAN{channel}:DATA?')
+            waveform_content = self.scope.read_raw()
+            #print(waveform_content.decode())
+            return waveform_header.encode()+b"_"+waveform_content
+        else: raise ValueError(f"Unknown waveform wf_format: {wf_format}")
 
 class ScopeLecroy(Scope):
 
@@ -112,7 +122,9 @@ class Event:
         }
         for channel,waveform in enumerate(self.waveforms):
             wf_dict[f"ch{channel}"] = waveform.y
-        return pd.DataFrame.from_dict(wf_dict)
+        event_df = pd.DataFrame.from_dict(wf_dict)
+        print(event_df)
+        return event_df
 
 class Waveform:
 

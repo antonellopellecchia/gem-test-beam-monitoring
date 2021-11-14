@@ -3,7 +3,7 @@ modules:
   hv: [
     {
       name: ftm,
-      port: /dev/ttyACM0,
+      port: /dev/ttyACM1,
       board: 0
     },
     {
@@ -18,13 +18,36 @@ modules:
     class: rto
     channels: [mcp, pmt1, pmt2, ftm]
 monitoring:
-  file: out/signals.txt
+  file: /data/runs/signals.txt
   data_x: time
-  data_y: {
-    "MCP-PMT": ch0,
-    "MaPMT 1": ch1,
-    "MaPMT 2": ch2,
-    "FTM": ch3,
-  }
-  sleep_time: 5
-output_dir: out
+  # data_y: {
+  #   "MCP-PMT": ch0,
+  #   "MaPMT 1": ch1,
+  #   "MaPMT 2": ch2,
+  #   "FTM": ch3,
+  # }
+  data_y: [
+    {
+      name: MaPMT 1,
+      channel: ch1,
+      color: red
+    },
+    {
+      name: MaPMT 2,
+      channel: ch2,
+      color: red
+    },
+    {
+      name: MCP-PMT,
+      channel: ch0,
+      color: darkviolet
+    },
+    {
+      name: FTM,
+      channel: ch3,
+      color: green
+    },
+  ]
+  twocolumns: True,
+  sleep_time: 1
+output_dir: /data/runs

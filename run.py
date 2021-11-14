@@ -34,11 +34,11 @@ def main():
     ftm_setup.scope.scope.write('TRIG:QUAL1:B 1')
     #ftm_setup.scope.scope.write('TRIG1:QUAL1:STAT 1')
     ftm_setup.scope.scope.write('TRIG2:QUAL1:STAT 1')
-    ftm_setup.scope.scope.write('TRIG:LEV 10e-3')
-    ftm_setup.scope.scope.write('TIM:SCAL 20e-9')
-    ftm_setup.scope.scope.write('TIM:POS 0')
-    ftm_setup.scope.scope.write('TIM:REF 50')
-    ftm_setup.scope.scope.write('TRIG:OFFS:LIM 1')
+    # ftm_setup.scope.scope.write('TRIG:LEV 10e-3')
+    # ftm_setup.scope.scope.write('TIM:SCAL 100e-9')
+    # ftm_setup.scope.scope.write('TIM:POS 0')
+    # ftm_setup.scope.scope.write('TIM:REF 0')
+    # ftm_setup.scope.scope.write('TRIG:OFFS:LIM 0')
     ftm_setup.scope.scope.write('TRIG:SEQ:MODE ABR')
     ftm_setup.scope.scope.write('RUN')
 
@@ -106,9 +106,9 @@ def main():
             #status_byte = int(ftm_setup.scope.scope.read())
             #print('Status byte', format(status_byte, "016b"))
 
-            # ftm_setup.scope.scope.write("*ESE?")
-            # esr = ftm_setup.scope.scope.read()
-            # if esr != "0": print("ESE", esr)
+            ftm_setup.scope.scope.write("*ESE?")
+            esr = ftm_setup.scope.scope.read()
+            if esr != "0": print("ESE", esr)
 
             ftm_setup.scope.scope.write("*OPC")
             
